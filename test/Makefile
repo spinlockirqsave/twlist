@@ -1,5 +1,5 @@
 CC			= gcc
-CFLAGS			= -c -Wall -Wextra -D_GNU_SOURCE -Wfatal-errors -std=gnu99
+CFLAGS			= -c -Wall -Wextra -Wfatal-errors -std=gnu99
 SRCDIR 			= .
 DEBUGOUTPUTDIR 		= build/debug
 RELEASEOUTPUTDIR	= build/release
@@ -22,6 +22,9 @@ debug:		debugall
 
 release:	CFLAGS += -DNDEBUG
 release: 	releaseall
+
+test:		releaseall
+		./$(RELEASETARGET)
 
 $(DEBUGTARGET): $(DEBUGOBJECTS) 
 	$(CC) $(LDFLAGS) $(DEBUGOBJECTS) -o $@

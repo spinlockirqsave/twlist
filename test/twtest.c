@@ -52,10 +52,25 @@ twlist_test_list_add(void)
 }
 
 static void
+twlist_test_list_add_tail(void)
+{
+	struct twlist_head	h;
+	struct gucio		g;
+
+	TWINIT_LIST_HEAD(&h);
+	twlist_add_tail(&g.link, &h);
+	assert(h.next == &g.link);
+	assert(h.prev == &g.link);
+	assert(g.link.next == &h);
+	assert(g.link.prev == &h);
+}
+
+static void
 twlist_test(void)
 {
 	twlist_test_list_creation();
 	twlist_test_list_add();
+	twlist_test_list_add_tail();
 }
 
 int
