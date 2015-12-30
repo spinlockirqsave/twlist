@@ -1,10 +1,10 @@
-///  @file      twlist.h
-///  @brief     twlist - doubly linked list with double pointer list head,
+/// @file      twlist.h
+/// @brief     twlist - doubly linked list with double pointer list head,
 ///		twhlist - doubly linked list with single pointer list head.
-///  @author    peterg
-///  @version   0.1.1
-///  @date      17 Nov 2015 11:55 AM
-///  @copyright LGPL
+/// @author    peterg
+/// @version   0.1.1
+/// @date      30 Dec 2015 11:12 AM
+/// @copyright LGPL
 
 
 #ifndef TWLIST_H
@@ -24,8 +24,8 @@
 # define POISON_POINTER_DELTA 0
 
 // These are non-NULL pointers that will result in page faults
-#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
-#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+#define TWLIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
+#define TWLIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
  
 #ifndef CONFIG_DEBUG_LIST
 struct twlist_head
@@ -134,8 +134,8 @@ static inline void
 twlist_del(struct twlist_head *entry)
 {
 	__twlist_del(entry->prev, entry->next);
-	entry->next = LIST_POISON1;
-	entry->prev = LIST_POISON2;
+	entry->next = TWLIST_POISON1;
+	entry->prev = TWLIST_POISON2;
 }
 #else
 extern void
@@ -554,8 +554,8 @@ static inline void
 twhlist_del(struct twhlist_node *n)
 {
 	__twhlist_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
+	n->next = TWLIST_POISON1;
+	n->pprev = TWLIST_POISON2;
 }
 
 static inline void
