@@ -28,7 +28,7 @@ struct gucio
 };
 
 static void
-twlist_test_list_creation(void)
+twlist_test_list_head_init(void)
 {
 	struct twlist_head	h;
 
@@ -106,7 +106,7 @@ twlist_test_list_del_init(void)
 static void
 twlist_test(void)
 {
-	twlist_test_list_creation();
+	twlist_test_list_head_init();
 	twlist_test_list_add();
 	twlist_test_list_add_tail();
 	twlist_test_list_del();
