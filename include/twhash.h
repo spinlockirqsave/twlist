@@ -1,10 +1,10 @@
 /// @file	twhash.c
 /// @brief	Hashtable.
-/// @details	Based on linux kernel hashtable implementation.
-/// @author	peterg
+/// @details	Based on linux kernel hashtable.
+/// @author	Piotr Gregor piotrek.gregor at gmail.com
 /// @version	0.1.1
-/// @date      30 Dec 2015 11:12 AM
-/// @copyright LGPL
+/// @date	30 Dec 2015 11:12 AM
+/// @copyright	LGPL
 
 
 #ifndef TWHASHTABLE_H

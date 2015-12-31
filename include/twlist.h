@@ -1,10 +1,10 @@
-/// @file      twlist.h
-/// @brief     twlist - doubly linked list with double pointer list head,
+/// @file	twlist.h
+/// @brief	twlist - doubly linked list with double pointer list head,
 ///		twhlist - doubly linked list with single pointer list head.
-/// @author    peterg
-/// @version   0.1.1
-/// @date      30 Dec 2015 11:12 AM
-/// @copyright LGPL
+/// @author	Piotr Gregor piotrek.gregor at gmail.com
+/// @version	0.1.1
+/// @date	30 Dec 2015 11:12 AM
+/// @copyright	LGPL
 
 
 #ifndef TWLIST_H

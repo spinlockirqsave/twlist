@@ -1,9 +1,9 @@
-/// @file      twtest.c
-/// @brief     Test suite for twlist.h and twhash.h.
-/// @author    peterg
-/// @version   0.1.1
-/// @date      30 Dec 2015 11:12 AM
-/// @copyright LGPL
+/// @file	twtest.c
+/// @brief	Test suite for twlist.h and twhash.h.
+/// @author	Piotr Gregor piotrek.gregor at gmail.com
+/// @version	0.1.1
+/// @date	30 Dec 2015 11:12 AM
+/// @copyright	LGPL
 
 
 #include "twlist.h"		// list
