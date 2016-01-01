@@ -334,14 +334,14 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Get the struct for this entry.
 ///		@ptr:	the &struct twlist_head pointer.
 ///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_struct within the struct.
+///		@member:	the name of the twlist_head within the struct.
 #define twlist_entry(ptr, type, member) \
 		container_of(ptr, type, member)
 
 /// @brief	Get the first element from a twlist.
 ///		@ptr:	the twlist head to take the element from.
 ///		@type:	the type of the struct this is embedded in.
-///		@member:the name of the twlist_struct within the struct.
+///		@member:the name of the twlist_head within the struct.
 /// @details	Note, that twlist is expected to be not empty.
 #define twlist_first_entry(ptr, type, member) \
 		twlist_entry((ptr)->next, type, member)
@@ -349,7 +349,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Get the last element from a twlist.
 ///		@ptr:	the twlist head to take the element from.
 ///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_struct within the struct.
+///		@member:	the name of the twlist_head within the struct.
 /// @details	Note, that twlist is expected to be not empty.
 #define twlist_last_entry(ptr, type, member) \
 		twlist_entry((ptr)->prev, type, member)
@@ -357,20 +357,20 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Get the first element from a twlist.
 ///		@ptr:	the twlist head to take the element from.
 ///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_struct within the struct.
+///		@member:	the name of the twlist_head within the struct.
 /// @details	Note that if the twlist is empty, it returns NULL.
 #define twlist_first_entry_or_null(ptr, type, member) \
 		(!twlist_empty(ptr) ? twlist_first_entry(ptr, type, member) : NULL)
 
 /// @brief	Get the next element in twlist.
 ///		@pos:	the type * to cursor
-///		@member:	the name of the twlist_struct within the struct.
+///		@member:	the name of the twlist_head within the struct.
 #define twlist_next_entry(pos, member) \
 		twlist_entry((pos)->member.next, typeof(*(pos)), member)
 
 /// @brief	Get the prev element in twlist.
 ///		@pos:	the type * to cursor
-///		@member:	the name of the twlist_struct within the struct.
+///		@member:	the name of the twlist_head within the struct.
 #define twlist_prev_entry(pos, member) \
 		twlist_entry((pos)->member.prev, typeof(*(pos)), member)
 
@@ -417,7 +417,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Iterate backwards over twlist of given type.
 ///		@pos:	the type * to use as a loop cursor
 ///		@head:	the head for your twlist
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 #define twlist_for_each_entry_reverse(pos, head, member)			\
 		for (pos = twlist_last_entry(head, typeof(*pos), member);	\
 					     &pos->member != (head); 		\
@@ -426,7 +426,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Prepare a pos entry for use in twlist_for_each_entry_continue().
 ///		@pos:	the type * to use as a start point
 ///		@head:	the head of the twlist
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 /// @details	Prepares a pos entry for use as a start point in
 ///		twlist_for_each_entry_continue().
 #define twlist_prepare_entry(pos, head, member) \
@@ -435,7 +435,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Continue iteration over twlist of given type.
 ///		@pos:	the type * to use as a loop cursor
 ///		@head:	the head for your twlist
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 ///		Continue to iterate over twlist of given type, continuing after
 ///		the current position.
 #define twlist_for_each_entry_continue(pos, head, member) 			\
@@ -446,7 +446,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Iterate backwards from the given point.
 ///		@pos:	the type * to use as a loop cursor
 ///		@head:	the head for your list
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 /// @details	Start to iterate over list of given type backwards, continuing after
 ///		the current position.
 #define twlist_for_each_entry_continue_reverse(pos, head, member)		\
@@ -457,7 +457,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 /// @brief	Iterate over twlist of given type from the current point.
 ///		@pos:	the type * to use as a loop cursor
 ///		@head:	the head for your twlist
-///		@member:the name of the list_struct within the struct
+///		@member:the name of the twlist_head within the struct
 /// @details	Iterate over list of given type, continuing from current position.
 #define twlist_for_each_entry_from(pos, head, member) 			\
 		for (; &pos->member != (head);					\
@@ -468,7 +468,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 ///		@pos:	the type * to use as a loop cursor
 ///		@n:	another type * to use as temporary storage
 ///		@head:	the head for your list
-///		@member:the name of the list_struct within the struct.
+///		@member:the name of the twlist_head within the struct.
 #define twlist_for_each_entry_safe(pos, n, head, member)			\
 		for (pos = twlist_first_entry(head, typeof(*pos), member),	\
 			n = twlist_next_entry(pos, member);			\
@@ -492,7 +492,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 ///		@pos:	the type * to use as a loop cursor
 ///		@n:	another type * to use as temporary storage
 ///		@head:	the head for your twlist
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 /// @details	Iterate over twlist of given type from current point, safe against
 ///		removal of twlist entry.
 #define twlist_for_each_entry_safe_from(pos, n, head, member) 	\
@@ -504,7 +504,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 ///		@pos:	the type * to use as a loop cursor
 ///		@n:	another type * to use as temporary storage
 ///		@head:	the head for your twlist
-///		@member:the name of the twlist_struct within the struct
+///		@member:the name of the twlist_head within the struct
 /// @details	Iterate backwards over twlist of given type, safe against removal
 ///		of twlist entry.
 #define twlist_for_each_entry_safe_reverse(pos, n, head, member)		\
