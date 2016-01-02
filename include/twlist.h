@@ -14,7 +14,7 @@
 #include <stdlib.h>             // everything
 
 
-#define container_of(ptr, type, member) ({                      \
+#define tw_container_of(ptr, type, member) ({                      \
         const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
@@ -336,7 +336,7 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 ///		@type:	the type of the struct this is embedded in.
 ///		@member:	the name of the twlist_head within the struct.
 #define twlist_entry(ptr, type, member) \
-		container_of(ptr, type, member)
+		tw_container_of(ptr, type, member)
 
 /// @brief	Get the first element from a twlist.
 ///		@ptr:	the twlist head to take the element from.
@@ -623,7 +623,7 @@ twhlist_move_list(struct twhlist_head *old,
 }
 
 #define twhlist_entry(ptr, type, member) \
-	container_of(ptr,type,member)
+	tw_container_of(ptr,type,member)
 
 #define twhlist_for_each(pos, head) \
 	for (pos = (head)->first; pos ; pos = pos->next)
