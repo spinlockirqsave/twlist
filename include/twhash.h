@@ -201,6 +201,10 @@ __twhash_init(struct twhlist_head *ht, unsigned int sz)
 	twhlist_add_head(node, \
 		&hashtable[twhash_min(key, TWHASH_BITS(hashtable))])
 
+#define twhash_add_bits(hashtable, node, key, bits)	\
+	twhlist_add_head(node, \
+		&hashtable[twhash_min(key, bits)])
+
 /// @brief	Check whether an object is in any hashtable.
 ///		@node: the &struct twhlist_node of the object to be checked
 static inline int
