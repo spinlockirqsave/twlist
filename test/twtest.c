@@ -1,7 +1,7 @@
 /// @file	twtest.c
 /// @brief	Test suite for twlist.h and twhash.h.
 /// @author	Piotr Gregor piotrek.gregor at gmail.com
-/// @version	0.1.1
+/// @version	0.1.2
 /// @date	30 Dec 2015 11:12 AM
 /// @copyright	LGPLv2.1
 

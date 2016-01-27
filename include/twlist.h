@@ -2,7 +2,7 @@
 /// @brief	twlist - doubly linked list with double pointer list head,
 ///		twhlist - doubly linked list with single pointer list head.
 /// @author	Piotr Gregor piotrek.gregor at gmail.com
-/// @version	0.1.1
+/// @version	0.1.2
 /// @date	30 Dec 2015 11:12 AM
 /// @copyright	LGPLv2.1
 
