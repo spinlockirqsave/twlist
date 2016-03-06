@@ -48,7 +48,7 @@ typedef twhlist_head_dbg twhlist_head;
 typedef twhlist_node_dbg twhlist_node;
 #endif
 
-// Simple doubly linked list implementation.
+/* Simple doubly linked list implementation. */
 
 #define TWLIST_HEAD_INIT(name) { &(name), &(name) }
 
@@ -62,9 +62,9 @@ TWINIT_LIST_HEAD(struct twlist_head *list)
 	list->prev = list;
 }
 
-// Insert a new entry between two known consecutive entries.
-// This is only for internal list manipulation where we know
-// the prev/next entries already!
+/* Insert a new entry between two known consecutive entries.
+ * This is only for internal list manipulation where we know
+ * the prev/next entries already! */
 #ifndef CONFIG_DEBUG_LIST
 static inline void
 __twlist_add(struct twlist_head *new,
@@ -84,10 +84,10 @@ __twlist_add(struct twlist_head *new,
 #endif
 
 
-/// @brief	Add a new entry after the specified head.
-/// 		@new:	new entry to be added
-/// 		@head:	list head to add it after
-/// @details	This is good for implementing stacks.
+/* @brief   Add a new entry after the specified head.
+ * @param   new:	new entry to be added
+ * @param   head:	list head to add it after
+ * @details	This is good for implementing stacks. */
 static inline void
 twlist_add(struct twlist_head *new,
 				struct twlist_head *head)
@@ -96,10 +96,10 @@ twlist_add(struct twlist_head *new,
 }
 
 
-/// @brief	Add a new entry before the specified head.
-/// 		@new:	new entry to be added
-/// 		@head:	list head to add it before
-/// @details	This is useful for implementing queues.
+/* @brief       Add a new entry before the specified head.
+ * @param       new:	new entry to be added
+ * @param       head:	list head to add it before
+ * @details     This is useful for implementing queues. */
 static inline void
 twlist_add_tail(struct twlist_head *new,
 				struct twlist_head *head)
@@ -107,10 +107,10 @@ twlist_add_tail(struct twlist_head *new,
 		__twlist_add(new, head->prev, head);
 }
 
-/// @brief	Delete a list entry by making the prev/next entries
-///		point to each other.
-/// @details	This is only for internal list manipulation where we know
-///		the prev/next entries already!
+/* @brief   Delete a list entry by making the prev/next entries
+ *          point to each other.
+ * @details This is only for internal list manipulation where we know
+ *          the prev/next entries already! */
 static inline void
 __twlist_del(struct twlist_head * prev,
 				struct twlist_head * next)
@@ -119,10 +119,10 @@ __twlist_del(struct twlist_head * prev,
 	prev->next = next;
 }
 
-/// @brief	Deletes entry from list.
-/// 		@entry: the element to delete from the list.
-///		Note: list_empty() on entry does not return
-///		true after this, the entry is in an undefined state.
+/* @brief   Deletes entry from list.
+ * @param   entry: the element to delete from the list.
+ * @details list_empty() on entry does not return
+ *          true after this, the entry is in an undefined state. */
 #ifndef CONFIG_DEBUG_LIST
 static inline void
 __twlist_del_entry(struct twlist_head *entry)
@@ -144,8 +144,8 @@ extern void
 twlist_del(struct twlist_head *entry);
 #endif
 
-/// @brief	Deletes entry from twlist and reinitialize it.
-///		@entry: the element to delete from the twlist.
+/* @brief   Deletes entry from twlist and reinitialize it.
+ * @param   entry: the element to delete from the twlist. */
 static inline void
 twlist_del_init(struct twlist_head *entry)
 {
@@ -153,9 +153,9 @@ twlist_del_init(struct twlist_head *entry)
 	TWINIT_LIST_HEAD(entry);
 }
 
-/// @brief	Delete from one twlist and add as another's head
-///		@twlist: the entry to move
-///		@head: the head that will precede our entry
+/* @brief   Delete from one twlist and add as another's head
+ * @param   twlist: the entry to move
+ * @param   head: the head that will precede our entry */
 static inline void
 twlist_move(struct twlist_head *twlist, struct twlist_head *head)
 {
