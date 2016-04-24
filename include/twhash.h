@@ -254,7 +254,7 @@ twhash_del(struct twhlist_node *node)
 ///		hash entry.
 ///		@name: hashtable to iterate
 ///		@bkt: integer to use as bucket loop cursor
-///		@tmp: a &struct used for temporary storage
+///		@tmp: struct twhlist_node* used for temporary storage
 ///		@obj: the type * to use as a loop cursor for each entry
 ///		@member: the name of the twhlist_node within the struct
 #define twhash_for_each_safe(name, bkt, tmp, obj, member)			\
@@ -276,7 +276,7 @@ twhash_del(struct twhlist_node *node)
 ///		same bucket safe against removals.
 ///		@name: hashtable to iterate
 ///		@obj: the type * to use as a loop cursor for each entry
-///		@tmp: a &struct used for temporary storage
+///		@tmp: struct twhlist_node* used for temporary storage
 ///		@member: the name of the twhlist_node within the struct
 ///		@key: the key of the objects to iterate over
 #define twhash_for_each_possible_safe(name, obj, tmp, member, key)	\
