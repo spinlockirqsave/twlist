@@ -1,10 +1,13 @@
-/// @file	twlist.h
-/// @brief	twlist - doubly linked list with double pointer list head,
-///		twhlist - doubly linked list with single pointer list head.
-/// @author	Piotr Gregor piotrek.gregor at gmail.com
-/// @version	0.1.2
-/// @date	30 Dec 2015 11:12 AM
-/// @copyright	LGPLv2.1
+/*
+ * @file        twlist.h
+ * @brief       twlist - doubly linked list with double pointer list head,
+ *              twhlist - doubly linked list with single pointer list head.
+ * @author      Piotr Gregor piotrek.gregor at gmail.com, based on Linux Kernel
+ *              list and hlist.
+ * @version     0.1.2
+ * @date        30 Dec 2015 11:12 AM
+ * @copyright   LGPLv2.1
+ */
 
 
 #ifndef TWLIST_H
@@ -684,17 +687,24 @@ twfifo_enqueue(struct twlist_head *new,
 }
 
 static inline struct twlist_head*
-twfifo_dequeue(twfifo_queue *q)
+twfifo_dequeue_f(twfifo_queue *q)
 {
 	struct twlist_head *l; 
-	if (twlist_empty((struct twlist_head *)q))
+	if (twlist_empty((struct twlist_head*)q))
 		return NULL;
 	l = q->prev;
 	twlist_del(l);
 	return l;
 }
+#define twfifo_dequeue(q,l) \
+	({ twlist_empty((struct twlist_head*)q) ? \
+     l = NULL : (l = ((struct twlist_head*)q)->prev, twlist_del(l), l); \
+	})
+/*#define twfifo_dequeue(q,l) twlist_empty(struct twlist_head*)q ? NULL : l = q->prev, twlist_del(l), l*/
 
-#define twfifo_dequeue_entry(q, type, member) {(		\
+
+/* @brief   Get pointer to an entry BUT not dequeue it. */
+#define twfifo_get_entry(q, type, member) {(		\
 	({ (twlist_empty((struct twlist_head *)q)) ?	\
 		NULL;						\
 		twlist_last_entry((struct twlist_head *)q,\
