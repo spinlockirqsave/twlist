@@ -680,9 +680,7 @@ twhlist_move_list(struct twhlist_head *old,
 typedef struct twlist_head twfifo_queue;
 
 static inline void
-twfifo_enqueue(struct twlist_head *new,
-				twfifo_queue *q)
-{
+twfifo_enqueue(struct twlist_head *new, twfifo_queue *q) {
 	twlist_add_tail(new, (struct twlist_head *)q);
 }
 
@@ -692,22 +690,22 @@ twfifo_dequeue_f(twfifo_queue *q)
 	struct twlist_head *l; 
 	if (twlist_empty((struct twlist_head*)q))
 		return NULL;
-	l = q->prev;
+	l = q->next;
 	twlist_del(l);
 	return l;
 }
 #define twfifo_dequeue(q,l) \
 	({ twlist_empty((struct twlist_head*)q) ? \
-     l = NULL : (l = ((struct twlist_head*)q)->prev, twlist_del(l), l); \
+     l = NULL : (l = ((struct twlist_head*)q)->next, twlist_del(l), l); \
 	})
-/*#define twfifo_dequeue(q,l) twlist_empty(struct twlist_head*)q ? NULL : l = q->prev, twlist_del(l), l*/
+/*#define twfifo_dequeue(q,l) twlist_empty(struct twlist_head*)q ? NULL : l = q->next, twlist_del(l), l*/
 
 
 /* @brief   Get pointer to an entry BUT not dequeue it. */
 #define twfifo_get_entry(q, type, member) {(		\
 	({ (twlist_empty((struct twlist_head *)q)) ?	\
 		NULL;						\
-		twlist_last_entry((struct twlist_head *)q,\
+		twlist_first_entry((struct twlist_head *)q,\
 					 type, member) })	\
 
 #endif // TWLIST_H
