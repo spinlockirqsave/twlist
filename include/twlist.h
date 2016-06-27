@@ -2,7 +2,7 @@
  * @file        twlist.h
  * @brief       twlist - doubly linked list with double pointer list head,
  *              twhlist - doubly linked list with single pointer list head.
- * @author      Piotr Gregor piotrek.gregor at gmail.com, based on Linux Kernel
+ * @author      Piotr Gregor <piotrek.gregor at gmail.com>, based on Linux Kernel
  *              list and hlist.
  * @version     0.1.2
  * @date        30 Dec 2015 11:12 AM
@@ -14,21 +14,20 @@
 #define TWLIST_H
 
 
-#include <stdlib.h>             // everything
+#include <stdlib.h>
 
 
-#define tw_container_of(ptr, type, member) ({                      \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+#define tw_container_of(ptr, type, member) __extension__ ({         \
+        const __typeof__( ((type *)0)->member ) *__mptr = (ptr);    \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
 
-// move the poison pointer offset into some well-recognized area
-// such as 0xdead000000000000
+/* move the poison pointer offset into some well-recognized area such as 0xdead000000000000 */
 # define POISON_POINTER_DELTA 0
 
-// These are non-NULL pointers that will result in page faults
-#define TWLIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
-#define TWLIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+/* These are non-NULL pointers that will result in page faults */
+#define TWLIST_POISON1  (void*)((unsigned char*) 0x00100100 + POISON_POINTER_DELTA)
+#define TWLIST_POISON2  (void*)((unsigned char*) 0x00200200 + POISON_POINTER_DELTA)
  
 #ifndef CONFIG_DEBUG_LIST
 struct twlist_head
@@ -55,11 +54,9 @@ typedef twhlist_node_dbg twhlist_node;
 
 #define TWLIST_HEAD_INIT(name) { &(name), &(name) }
 
-#define TWLIST_HEAD(name) \
-	struct twlist_head name = TWLIST_HEAD_INIT(name)
+#define TWLIST_HEAD(name) struct twlist_head name = TWLIST_HEAD_INIT(name)
 
-static inline void
-TWINIT_LIST_HEAD(struct twlist_head *list)
+static void TWINIT_LIST_HEAD(struct twlist_head *list)
 {
 	list->next = list;
 	list->prev = list;
@@ -69,7 +66,7 @@ TWINIT_LIST_HEAD(struct twlist_head *list)
  * This is only for internal list manipulation where we know
  * the prev/next entries already! */
 #ifndef CONFIG_DEBUG_LIST
-static inline void
+static void
 __twlist_add(struct twlist_head *new,
 				struct twlist_head *prev,
 				struct twlist_head *next)
@@ -91,7 +88,7 @@ __twlist_add(struct twlist_head *new,
  * @param   new:	new entry to be added
  * @param   head:	list head to add it after
  * @details	This is good for implementing stacks. */
-static inline void
+static void
 twlist_add(struct twlist_head *new,
 				struct twlist_head *head)
 {
@@ -103,7 +100,7 @@ twlist_add(struct twlist_head *new,
  * @param       new:	new entry to be added
  * @param       head:	list head to add it before
  * @details     This is useful for implementing queues. */
-static inline void
+static void
 twlist_add_tail(struct twlist_head *new,
 				struct twlist_head *head)
 {
@@ -114,7 +111,7 @@ twlist_add_tail(struct twlist_head *new,
  *          point to each other.
  * @details This is only for internal list manipulation where we know
  *          the prev/next entries already! */
-static inline void
+static void
 __twlist_del(struct twlist_head * prev,
 				struct twlist_head * next)
 {
@@ -127,13 +124,13 @@ __twlist_del(struct twlist_head * prev,
  * @details list_empty() on entry does not return
  *          true after this, the entry is in an undefined state. */
 #ifndef CONFIG_DEBUG_LIST
-static inline void
+static void
 __twlist_del_entry(struct twlist_head *entry)
 {
 	__twlist_del(entry->prev, entry->next);
 }
 
-static inline void
+static void
 twlist_del(struct twlist_head *entry)
 {
 	__twlist_del(entry->prev, entry->next);
@@ -149,7 +146,7 @@ twlist_del(struct twlist_head *entry);
 
 /* @brief   Deletes entry from twlist and reinitialize it.
  * @param   entry: the element to delete from the twlist. */
-static inline void
+static void
 twlist_del_init(struct twlist_head *entry)
 {
 	__twlist_del_entry(entry);
@@ -159,17 +156,17 @@ twlist_del_init(struct twlist_head *entry)
 /* @brief   Delete from one twlist and add as another's head
  * @param   twlist: the entry to move
  * @param   head: the head that will precede our entry */
-static inline void
+static void
 twlist_move(struct twlist_head *twlist, struct twlist_head *head)
 {
 	__twlist_del_entry(twlist);
 	twlist_add(twlist, head);
 }
 
-/// @brief	Delete from one twlist and add as another's tail
-///		@twlist: the entry to move
-///		@head: the head that will follow our entry
-static inline void
+/* @brief	Delete from one twlist and add as another's tail
+ * @twlist: the entry to move
+ * @head: the head that will follow our entry */
+static void
 twlist_move_tail(struct twlist_head *twlist,
 						  struct twlist_head *head)
 {
@@ -177,43 +174,43 @@ twlist_move_tail(struct twlist_head *twlist,
 	twlist_add_tail(twlist, head);
 }
 
-/// @brief	Tests whether @list is the last entry in twlist @head
-///		@list: the entry to test
-///		@head: the head of the twlist which @list is member of
-static inline int
+/* @brief	Tests whether @list is the last entry in twlist @head
+ * @list: the entry to test
+ * @head: the head of the twlist which @list is member of */
+static int
 twlist_is_last(const struct twlist_head *list,
 					const struct twlist_head *head)
 {
 	return list->next == head;
 }
 
-/// @brief	Tests whether a twlist is empty.
-///		@head: the twlist to test.
-static inline int
+/* @brief	Tests whether a twlist is empty.
+ * @head: the twlist to test. */
+static int
 twlist_empty(const struct twlist_head *head)
 {
 	return head->next == head;
 }
 
-/// @brief	Tests whether a twlist is empty and not being modified
-///		@head: the twlist to test
-/// @details	Tests whether a twlist is empty _and_ checks that
-///		no other CPU might be in the process of modifying either
-///		member (next or prev)
-///		NOTE: using twlist_empty_careful() without synchronization
-///		can only be safe if the only activity that can happen
-///		to the twlist entry is twlist_del_init(). Eg. it
-///		cannot be used if another CPU could re-twlist_add() it.
-static inline int
+/* @brief	Tests whether a twlist is empty and not being modified
+ * @head: the twlist to test
+ * @details	Tests whether a twlist is empty _and_ checks that
+ * no other CPU might be in the process of modifying either
+ * member (next or prev)
+ * NOTE: using twlist_empty_careful() without synchronization
+ * can only be safe if the only activity that can happen
+ * to the twlist entry is twlist_del_init(). Eg. it
+ * cannot be used if another CPU could re-twlist_add() it. */
+static int
 twlist_empty_careful(const struct twlist_head *head)
 {
 		struct twlist_head *next = head->next;
 			return (next == head) && (next == head->prev);
 }
 
-/// @brief	Rotate the twlist to the left
-///		@head: the head of the twlist
-static inline void
+/* @brief	Rotate the twlist to the left
+ * @head: the head of the twlist */
+static void
 twlist_rotate_left(struct twlist_head *head)
 {
 	struct twlist_head *first;
@@ -224,15 +221,15 @@ twlist_rotate_left(struct twlist_head *head)
 	}
 }
 
-/// @brief	Tests whether a twlist has just one entry.
-///		@head: the twlist to test.
-static inline int
+/* @brief	Tests whether a twlist has just one entry.
+ * @head: the twlist to test. */
+static int
 twlist_is_singular(const struct twlist_head *head)
 {
 	return !twlist_empty(head) && (head->next == head->prev);
 }
 
-static inline void
+static void
 __twlist_cut_position(struct twlist_head *twlist,
 						struct twlist_head *head,
 						struct twlist_head *entry)
@@ -246,17 +243,17 @@ __twlist_cut_position(struct twlist_head *twlist,
 	new_first->prev = head;
 }
 
-/// @brief	Cut a twlist into two.
-///		@twlist: a new twlist to add all removed entries
-///		@head: a twlist with entries
-///		@entry: an entry within head, could be the head itself
-///		and if so we won't cut the twlist
-///		This helper moves the initial part of @head, up to and
-///		including @entry, from @head to @twlist. You should
-///		pass on @entry an element you know is on @head. @twlist
-///		should be an empty twlist or a twlist you do not
-///		care about losing its data.
-static inline void twlist_cut_position(struct twlist_head *twlist,
+/* @brief	Cut a twlist into two.
+ * @twlist: a new twlist to add all removed entries
+ * @head: a twlist with entries
+ * @entry: an entry within head, could be the head itself
+ * and if so we won't cut the twlist
+ * This helper moves the initial part of @head, up to and
+ * including @entry, from @head to @twlist. You should
+ * pass on @entry an element you know is on @head. @twlist
+ * should be an empty twlist or a twlist you do not
+ * care about losing its data. */
+static void twlist_cut_position(struct twlist_head *twlist,
 						struct twlist_head *head,
 						struct twlist_head *entry)
 {
@@ -271,7 +268,7 @@ static inline void twlist_cut_position(struct twlist_head *twlist,
 		__twlist_cut_position(twlist, head, entry);
 }
 
-static inline void __twlist_splice(const struct twlist_head *twlist,
+static void __twlist_splice(const struct twlist_head *twlist,
 						struct twlist_head *prev,
 						struct twlist_head *next)
 {
@@ -285,31 +282,31 @@ static inline void __twlist_splice(const struct twlist_head *twlist,
 	next->prev = last;
 }
 
-/// @brief	Join two lists, this is designed for stacks.
-///		@twlist: the new list to add.
-///		@head: the place to add it in the first list.
-static inline void twlist_splice(const struct twlist_head *twlist,
+/* @brief	Join two lists, this is designed for stacks.
+ * @twlist: the new list to add.
+ * @head: the place to add it in the first list. */
+static void twlist_splice(const struct twlist_head *twlist,
 						struct twlist_head *head)
 {
 	if (!twlist_empty(twlist))
 		__twlist_splice(twlist, head, head->next);
 }
 
-/// @brief	Join two lists, each list being a queue.
-///		@twlist: the new list to add.
-///		@head: the place to add it in the first list.
-static inline void twlist_splice_tail(struct twlist_head *twlist,
+/* @brief	Join two lists, each list being a queue.
+ * @twlist: the new list to add.
+ * @head: the place to add it in the first list. */
+static void twlist_splice_tail(struct twlist_head *twlist,
 						struct twlist_head *head)
 {
 	if (!twlist_empty(twlist))
 		__twlist_splice(twlist, head->prev, head);
 }
 
-/// @brief	Join two twlists and reinitialise the emptied list.
-///		@twlist: the new list to add.
-///		@head: the place to add it in the first list.
-/// @details	The twlist at @twlist is reinitialised.
-static inline void twlist_splice_init(struct twlist_head *twlist,
+/* @brief	Join two twlists and reinitialise the emptied list.
+ * @twlist: the new list to add.
+ * @head: the place to add it in the first list.
+ * @details	The twlist at @twlist is reinitialised. */
+static void twlist_splice_init(struct twlist_head *twlist,
 						struct twlist_head *head)
 {
 	if (!twlist_empty(twlist))
@@ -319,12 +316,12 @@ static inline void twlist_splice_init(struct twlist_head *twlist,
 	}
 }
 
-/// @brief	Join two lists and reinitialise the emptied list.
-///		@twlist: the new list to add.
-///		@head: the place to add it in the first list.
-/// @details	Each of the lists is a queue. The list at @twlist
-///		is reinitialised
-static inline void twlist_splice_tail_init(struct twlist_head *twlist,
+/* @brief	Join two lists and reinitialise the emptied list.
+ * @twlist: the new list to add.
+ * @head: the place to add it in the first list.
+ * @details	Each of the lists is a queue. The list at @twlist
+ * is reinitialised */
+static void twlist_splice_tail_init(struct twlist_head *twlist,
 						struct twlist_head *head)
 {
 	if (!twlist_empty(twlist))
@@ -334,216 +331,216 @@ static inline void twlist_splice_tail_init(struct twlist_head *twlist,
 	}
 }
 
-/// @brief	Get the struct for this entry.
-///		@ptr:	the &struct twlist_head pointer.
-///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_head within the struct.
+/* @brief	Get the struct for this entry.
+ * @ptr:	the &struct twlist_head pointer.
+ * @type:	the type of the struct this is embedded in.
+ * @member:	the name of the twlist_head within the struct. */
 #define twlist_entry(ptr, type, member) \
 		tw_container_of(ptr, type, member)
 
-/// @brief	Get the first element from a twlist.
-///		@ptr:	the twlist head to take the element from.
-///		@type:	the type of the struct this is embedded in.
-///		@member:the name of the twlist_head within the struct.
-/// @details	Note, that twlist is expected to be not empty.
+/* @brief	Get the first element from a twlist.
+ * @ptr:	the twlist head to take the element from.
+ * @type:	the type of the struct this is embedded in.
+ * @member:the name of the twlist_head within the struct.
+ * @details	Note, that twlist is expected to be not empty. */
 #define twlist_first_entry(ptr, type, member) \
 		twlist_entry((ptr)->next, type, member)
 
-/// @brief	Get the last element from a twlist.
-///		@ptr:	the twlist head to take the element from.
-///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_head within the struct.
-/// @details	Note, that twlist is expected to be not empty.
+/* @brief	Get the last element from a twlist.
+ * @ptr:	the twlist head to take the element from.
+ * @type:	the type of the struct this is embedded in.
+ * @member:	the name of the twlist_head within the struct.
+ * @details	Note, that twlist is expected to be not empty. */
 #define twlist_last_entry(ptr, type, member) \
 		twlist_entry((ptr)->prev, type, member)
 
-/// @brief	Get the first element from a twlist.
-///		@ptr:	the twlist head to take the element from.
-///		@type:	the type of the struct this is embedded in.
-///		@member:	the name of the twlist_head within the struct.
-/// @details	Note that if the twlist is empty, it returns NULL.
+/* @brief	Get the first element from a twlist.
+ * @ptr:	the twlist head to take the element from.
+ * @type:	the type of the struct this is embedded in.
+ * @member:	the name of the twlist_head within the struct.
+ * @details	Note that if the twlist is empty, it returns NULL. */
 #define twlist_first_entry_or_null(ptr, type, member) \
 		(!twlist_empty(ptr) ? twlist_first_entry(ptr, type, member) : NULL)
 
-/// @brief	Get the next element in twlist.
-///		@pos:	the type * to cursor
-///		@member:	the name of the twlist_head within the struct.
+/* @brief	Get the next element in twlist.
+ * @pos:	the type * to cursor
+ * @member:	the name of the twlist_head within the struct. */
 #define twlist_next_entry(pos, member) \
-		twlist_entry((pos)->member.next, typeof(*(pos)), member)
+		twlist_entry((pos)->member.next, __typeof__(*(pos)), member)
 
-/// @brief	Get the prev element in twlist.
-///		@pos:	the type * to cursor
-///		@member:	the name of the twlist_head within the struct.
+/* @brief	Get the prev element in twlist.
+ * @pos:	the type * to cursor
+ * @member:	the name of the twlist_head within the struct. */
 #define twlist_prev_entry(pos, member) \
-		twlist_entry((pos)->member.prev, typeof(*(pos)), member)
+		twlist_entry((pos)->member.prev, __typeof__(*(pos)), member)
 
-/// @brief	Iterate over a twlist.
-///		@pos:	the &struct twlist_head to use as a loop cursor.
-///		@head:	the head for your twlist.
+/* @brief	Iterate over a twlist.
+ * @pos:	the &struct twlist_head to use as a loop cursor.
+ * @head:	the head for your twlist. */
 #define twlist_for_each(pos, head) \
 		for (pos = (head)->next; pos != (head); pos = pos->next)
 
-/// @brief	Iterate over a twlist backwards.
-///		@pos:	the &struct twlist_head to use as a loop cursor.
-///		@head:	the head for your twlist.
+/* @brief	Iterate over a twlist backwards.
+ * @pos:	the &struct twlist_head to use as a loop cursor.
+ * @head:	the head for your twlist. */
 #define twlist_for_each_prev(pos, head) \
 		for (pos = (head)->prev; pos != (head); pos = pos->prev)
 
-/// @brief	Iterate over a twlist safe against removal of twlist entry.
-///		@pos:	the &struct twlist_head to use as a loop cursor.
-///		@n:	another &struct twlist_head to use as
-///			temporary storage
-///		@head:	the head for your twlist.
+/* @brief	Iterate over a twlist safe against removal of twlist entry.
+ * @pos:	the &struct twlist_head to use as a loop cursor.
+ * @n:	another &struct twlist_head to use as
+ * temporary storage
+ * @head:	the head for your twlist. */
 #define twlist_for_each_safe(pos, n, head) \
 		for (pos = (head)->next, n = pos->next; pos != (head); \
 						pos = n, n = pos->next)
 
-/// @brief	Iterate over a twlist backwards safe against removal
-///		of twlist entry.
-///		@pos:	the &struct twlist_head to use as a loop cursor
-///		@n:	another &struct twlist_head to use as temporary storage
-///		@head:	the head for your twlist
+/* @brief	Iterate over a twlist backwards safe against removal
+ * of twlist entry.
+ * @pos:    the &struct twlist_head to use as a loop cursor
+ * @n:  another &struct twlist_head to use as temporary storage
+ * @head:   the head for your twlist */
 #define twlist_for_each_prev_safe(pos, n, head) 			\
 		for (pos = (head)->prev, n = pos->prev; 		\
 					     pos != (head); 		\
 					     pos = n, n = pos->prev)
 
-/// @brief	Iterate over twlist of given type
-///		@pos:	the type * to use as a loop cursor
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
+/* @brief	Iterate over twlist of given type
+ * @pos:	the type * to use as a loop cursor
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct */
 #define twlist_for_each_entry(pos, head, member)				\
-		for (pos = twlist_first_entry(head, typeof(*pos), member);	\
+		for (pos = twlist_first_entry(head, __typeof__(*pos), member);	\
 					     &pos->member != (head);		\
 					     pos = twlist_next_entry(pos, member))
 
-/// @brief	Iterate backwards over twlist of given type.
-///		@pos:	the type * to use as a loop cursor
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
+/* @brief	Iterate backwards over twlist of given type.
+ * @pos:	the type * to use as a loop cursor
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct */
 #define twlist_for_each_entry_reverse(pos, head, member)			\
-		for (pos = twlist_last_entry(head, typeof(*pos), member);	\
+		for (pos = twlist_last_entry(head, __typeof__(*pos), member);	\
 					     &pos->member != (head); 		\
 					     pos = twlist_prev_entry(pos, member))
 
-/// @brief	Prepare a pos entry for use in twlist_for_each_entry_continue().
-///		@pos:	the type * to use as a start point
-///		@head:	the head of the twlist
-///		@member:the name of the twlist_head within the struct
-/// @details	Prepares a pos entry for use as a start point in
-///		twlist_for_each_entry_continue().
+/* @brief	Prepare a pos entry for use in twlist_for_each_entry_continue().
+ * @pos:	the type * to use as a start point
+ * @head:	the head of the twlist
+ * @member:the name of the twlist_head within the struct
+ * @details	Prepares a pos entry for use as a start point in
+ * twlist_for_each_entry_continue(). */
 #define twlist_prepare_entry(pos, head, member) \
-		((pos) ? : twlist_entry(head, typeof(*pos), member))
+		((pos) ? : twlist_entry(head, __typeof__(*pos), member))
 
-/// @brief	Continue iteration over twlist of given type.
-///		@pos:	the type * to use as a loop cursor
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
-///		Continue to iterate over twlist of given type, continuing after
-///		the current position.
+/* @brief	Continue iteration over twlist of given type.
+ * @pos:	the type * to use as a loop cursor
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct
+ * Continue to iterate over twlist of given type, continuing after
+ * the current position. */
 #define twlist_for_each_entry_continue(pos, head, member) 			\
 		for (pos = twlist_next_entry(pos, member);			\
 					     &pos->member != (head);		\
 					     pos = twlist_next_entry(pos, member))
 
-/// @brief	Iterate backwards from the given point.
-///		@pos:	the type * to use as a loop cursor
-///		@head:	the head for your list
-///		@member:the name of the twlist_head within the struct
-/// @details	Start to iterate over list of given type backwards, continuing after
-///		the current position.
+/* @brief	Iterate backwards from the given point.
+ * @pos:	the type * to use as a loop cursor
+ * @head:	the head for your list
+ * @member:the name of the twlist_head within the struct
+ * @details	Start to iterate over list of given type backwards, continuing after
+ * the current position. */
 #define twlist_for_each_entry_continue_reverse(pos, head, member)		\
 		for (pos = twlist_prev_entry(pos, member);			\
 					     &pos->member != (head);		\
 					     pos = twlist_prev_entry(pos, member))
 
-/// @brief	Iterate over twlist of given type from the current point.
-///		@pos:	the type * to use as a loop cursor
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
-/// @details	Iterate over list of given type, continuing from current position.
+/* @brief	Iterate over twlist of given type from the current point.
+ * @pos:	the type * to use as a loop cursor
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct
+ * @details	Iterate over list of given type, continuing from current position. */
 #define twlist_for_each_entry_from(pos, head, member) 			\
 		for (; &pos->member != (head);					\
 					     pos = twlist_next_entry(pos, member))
 
-/// @brief	Iterate over twlist of given type safe against removal
-///		of twlist entry.
-///		@pos:	the type * to use as a loop cursor
-///		@n:	another type * to use as temporary storage
-///		@head:	the head for your list
-///		@member:the name of the twlist_head within the struct.
+/* @brief	Iterate over twlist of given type safe against removal
+ * of twlist entry.
+ * @pos:	the type * to use as a loop cursor
+ * @n:	another type * to use as temporary storage
+ * @head:	the head for your list
+ * @member:the name of the twlist_head within the struct. */
 #define twlist_for_each_entry_safe(pos, n, head, member)			\
-		for (pos = twlist_first_entry(head, typeof(*pos), member),	\
+		for (pos = twlist_first_entry(head, __typeof__(*pos), member),	\
 			n = twlist_next_entry(pos, member);			\
 			&pos->member != (head); 				\
 			pos = n, n = twlist_next_entry(n, member))
 
-/// @brief	Continue twlist iteration safe against removal.
-///		@pos:	the type * to use as a loop cursor
-///		@n:	another type * to use as temporary storage
-///		@head:	the head for your twlist
-///		@member:the name of the list head within the struct
-/// @details	Iterate over twlist of given type, continuing after current point,
-///		safe against removal of list entry.
+/* @brief	Continue twlist iteration safe against removal.
+ * @pos:	the type * to use as a loop cursor
+ * @n:	another type * to use as temporary storage
+ * @head:	the head for your twlist
+ * @member:the name of the list head within the struct
+ * @details	Iterate over twlist of given type, continuing after current point,
+ * safe against removal of list entry. */
 #define twlist_for_each_entry_safe_continue(pos, n, head, member) 		\
 		for (pos = twlist_next_entry(pos, member), 			\
 			n = twlist_next_entry(pos, member);			\
 			&pos->member != (head);					\
 			pos = n, n = twlist_next_entry(n, member))
 
-/// @brief	Iterate over twlist from current point safe against removal.
-///		@pos:	the type * to use as a loop cursor
-///		@n:	another type * to use as temporary storage
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
-/// @details	Iterate over twlist of given type from current point, safe against
-///		removal of twlist entry.
+/* @brief	Iterate over twlist from current point safe against removal.
+ * @pos:	the type * to use as a loop cursor
+ * @n:	another type * to use as temporary storage
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct
+ * @details	Iterate over twlist of given type from current point, safe against
+ * removal of twlist entry. */
 #define twlist_for_each_entry_safe_from(pos, n, head, member) 	\
 	for (n = twlist_next_entry(pos, member);			\
 		&pos->member != (head);					\
 		pos = n, n = twlist_next_entry(n, member))
 
-/// @brief	Iterate backwards over twlist safe against removal.
-///		@pos:	the type * to use as a loop cursor
-///		@n:	another type * to use as temporary storage
-///		@head:	the head for your twlist
-///		@member:the name of the twlist_head within the struct
-/// @details	Iterate backwards over twlist of given type, safe against removal
-///		of twlist entry.
+/* @brief	Iterate backwards over twlist safe against removal.
+ * @pos:	the type * to use as a loop cursor
+ * @n:	another type * to use as temporary storage
+ * @head:	the head for your twlist
+ * @member:the name of the twlist_head within the struct
+ * @details	Iterate backwards over twlist of given type, safe against removal
+ * of twlist entry. */
 #define twlist_for_each_entry_safe_reverse(pos, n, head, member)		\
-	for (pos = twlist_last_entry(head, typeof(*pos), member),		\
+	for (pos = twlist_last_entry(head, __typeof__(*pos), member),		\
 		n = twlist_prev_entry(pos, member);				\
 		&pos->member != (head); 					\
 		pos = n, n = twlist_prev_entry(n, member))
 
-/// @brief	Double linked lists with a single pointer list head.
-/// @details	Mostly useful for hash tables where the two pointer list
-///		head is too wasteful. You lose the ability to access
-///		the tail in O(1).
+/* @brief	Double linked lists with a single pointer list head.
+ * @details	Mostly useful for hash tables where the two pointer list
+ * head is too wasteful. You lose the ability to access
+ * the tail in O(1). */
 
 #define TWHLIST_HEAD_INIT { .first = NULL }
 #define TWHLIST_HEAD(name) struct twhlist_head name = {  .first = NULL }
 #define TWINIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
-static inline void
+static void
 TWINIT_HLIST_NODE(struct twhlist_node *h)
 {
 	h->next = NULL;
 	h->pprev = NULL;
 }
 
-static inline int
+static int
 twhlist_unhashed(const struct twhlist_node *h)
 {
 	return !h->pprev;
 }
 
-static inline int
+static int
 twhlist_empty(const struct twhlist_head *h)
 {
 	return !h->first;
 }
 
-static inline void
+static void
 __twhlist_del(struct twhlist_node *n)
 {
 	struct twhlist_node *next = n->next;
@@ -553,7 +550,7 @@ __twhlist_del(struct twhlist_node *n)
 		next->pprev = pprev;
 }
 
-static inline void
+static void
 twhlist_del(struct twhlist_node *n)
 {
 	__twhlist_del(n);
@@ -561,7 +558,7 @@ twhlist_del(struct twhlist_node *n)
 	n->pprev = TWLIST_POISON2;
 }
 
-static inline void
+static void
 twhlist_del_init(struct twhlist_node *n)
 {
 	if (!twhlist_unhashed(n))
@@ -571,7 +568,7 @@ twhlist_del_init(struct twhlist_node *n)
 	}
 }
 
-static inline void
+static void
 twhlist_add_head(struct twhlist_node *n,
 			struct twhlist_head *h)
 {
@@ -583,8 +580,8 @@ twhlist_add_head(struct twhlist_node *n,
 	n->pprev = &h->first;
 }
 
-// next must be != NULL
-static inline void
+/* next must be != NULL */
+static void
 twhlist_add_before(struct twhlist_node *n,
 				struct twhlist_node *next)
 {
@@ -594,7 +591,7 @@ twhlist_add_before(struct twhlist_node *n,
 	*(n->pprev) = n;
 }
 
-static inline void
+static void
 twhlist_add_after(struct twhlist_node *n,
 			struct twhlist_node *next)
 {
@@ -606,16 +603,16 @@ twhlist_add_after(struct twhlist_node *n,
 		next->next->pprev  = &next->next;
 }
 
-// after that we'll appear to be on some hlist and hlist_del will work
-static inline void
+/* after that we'll appear to be on some hlist and hlist_del will work */
+static void
 twhlist_add_fake(struct twhlist_node *n)
 {
 	n->pprev = &n->next;
 }
 
-// Move a list from one list head to another. Fixup the pprev
-// reference of the first entry if it exists.
-static inline void
+/* Move a list from one list head to another. Fixup the pprev
+ * reference of the first entry if it exists. */
+static void
 twhlist_move_list(struct twhlist_head *old,
 			struct twhlist_head *new)
 {
@@ -635,56 +632,56 @@ twhlist_move_list(struct twhlist_head *old,
 	for (pos = (head)->first; pos && ({ n = pos->next; 1; }); \
 		pos = n)
 
-#define twhlist_entry_safe(ptr, type, member) \
-	({ typeof(ptr) ____ptr = (ptr); \
+#define twhlist_entry_safe(ptr, type, member) __extension__\
+	({ __typeof__(ptr) ____ptr = (ptr); \
 		____ptr ? twhlist_entry(____ptr, type, member) : NULL; \
 	})
 
-/// @brief	Iterate over list of given type.
-///		@pos:		the type * to use as a loop cursor.
-///		@head:		the head for your list.
-///		@member:	the name of the hlist_node within the struct.
+/* @brief	Iterate over list of given type.
+ * @pos:		the type * to use as a loop cursor.
+ * @head:		the head for your list.
+ * @member:	the name of the hlist_node within the struct. */
 #define twhlist_for_each_entry(pos, head, member)				\
-	for (pos = twhlist_entry_safe((head)->first, typeof(*(pos)), member);\
+	for (pos = twhlist_entry_safe((head)->first, __typeof__(*(pos)), member);\
 		pos;							\
 		pos = twhlist_entry_safe((pos)->member.next, 	\
-		typeof(*(pos)), member))
+		__typeof__(*(pos)), member))
 
-/// @brief	Iterate over a twhlist continuing after current point.
-///		@pos:		the type * to use as a loop cursor.
-///		@member:	the name of the twhlist_node within the struct.
+/* @brief	Iterate over a twhlist continuing after current point.
+ * @pos:		the type * to use as a loop cursor.
+ * @member:	the name of the twhlist_node within the struct. */
 #define twhlist_for_each_entry_continue(pos, member)			\
-	for (pos = hlist_entry_safe((pos)->member.next, typeof(*(pos)), member);\
+	for (pos = hlist_entry_safe((pos)->member.next, __typeof__(*(pos)), member);\
 		pos;								\
 		pos = twhlist_entry_safe((pos)->member.next, 		\
-			typeof(*(pos)), member))
+			__typeof__(*(pos)), member))
 
-/// @brief	Iterate over a twhlist continuing from current point.
-///		@pos:		the type * to use as a loop cursor.
-///		@member:	the name of the hlist_node within the struct.
+/* @brief	Iterate over a twhlist continuing from current point.
+ * @pos:		the type * to use as a loop cursor.
+ * @member:	the name of the hlist_node within the struct. */
 #define twhlist_for_each_entry_from(pos, member)				\
 	for (; pos;								\
-	pos = twhlist_entry_safe((pos)->member.next, typeof(*(pos)), member))
+	pos = twhlist_entry_safe((pos)->member.next, __typeof__(*(pos)), member))
 
-/// @brief	Iterate over list of given type safe against removal of list entry.
-///		@pos:		the type * to use as a loop cursor.
-///		@n:		another &struct hlist_node to use as temporary storage
-///		@head:		the head for your list.
-///		@member:	the name of the hlist_node within the struct.
+/* @brief	Iterate over list of given type safe against removal of list entry.
+ * @pos:		the type * to use as a loop cursor.
+ * @n:		another &struct hlist_node to use as temporary storage
+ * @head:		the head for your list.
+ * @member:	the name of the hlist_node within the struct. */
 #define twhlist_for_each_entry_safe(pos, n, head, member) 		\
-		for (pos = twhlist_entry_safe((head)->first, typeof(*pos), member);\
-			pos && ({ n = pos->member.next; 1; });			\
-			pos = twhlist_entry_safe(n, typeof(*pos), member))
+		for (pos = twhlist_entry_safe((head)->first, __typeof__(*pos), member);\
+			pos && (n = pos->member.next, 1);			\
+			pos = twhlist_entry_safe(n, __typeof__(*pos), member))
 
-/// @brief	First-in, first-out queue.
+/* @brief	First-in, first-out queue. */
 typedef struct twlist_head twfifo_queue;
 
-static inline void
+static void
 twfifo_enqueue(struct twlist_head *new, twfifo_queue *q) {
 	twlist_add_tail(new, (struct twlist_head *)q);
 }
 
-static inline struct twlist_head*
+static struct twlist_head*
 twfifo_dequeue_f(twfifo_queue *q)
 {
 	struct twlist_head *l; 
@@ -694,7 +691,7 @@ twfifo_dequeue_f(twfifo_queue *q)
 	twlist_del(l);
 	return l;
 }
-#define twfifo_dequeue(q,l) \
+#define twfifo_dequeue(q,l) __extension__   \
 	({ twlist_empty((struct twlist_head*)q) ? \
      l = NULL : (l = ((struct twlist_head*)q)->next, twlist_del(l), l); \
 	})
@@ -702,10 +699,10 @@ twfifo_dequeue_f(twfifo_queue *q)
 
 
 /* @brief   Get pointer to an entry BUT not dequeue it. */
-#define twfifo_get_entry(q, type, member) {(		\
+#define twfifo_get_entry(q, type, member) __extension__ {(		\
 	({ (twlist_empty((struct twlist_head *)q)) ?	\
 		NULL;						\
 		twlist_first_entry((struct twlist_head *)q,\
 					 type, member) })	\
 
-#endif // TWLIST_H
+#endif /* TWLIST_H */

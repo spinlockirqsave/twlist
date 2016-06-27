@@ -1,10 +1,12 @@
-/// @file	twhash.c
-/// @brief	Hashtable.
-/// @details	Based on linux kernel hashtable.
-/// @author	Piotr Gregor piotrek.gregor at gmail.com
-/// @version	0.1.2
-/// @date	30 Dec 2015 11:12 AM
-/// @copyright	LGPLv2.1
+/* @file        twhash.c
+ * @brief       Hashtable.
+ * @details     Based on linux kernel hashtable.
+ * @author      Piotr Gregor <piotrek.gregor at gmail.com>, based on Linux Kernel
+ *              list and hlist.
+ * @version     0.1.2
+ * @date        30 Dec 2015 11:12 AM
+ * @copyright   LGPLv2.1
+ */
 
 
 #ifndef TWHASHTABLE_H
@@ -17,10 +19,10 @@
 #include <stdint.h>
 
 
-// TODO handle n < 0 case
-#define twilog2(n)	\
-(			\
-	(	\
+/* TODO handle n < 0 case */
+#define twilog2(n)	            \
+(			                    \
+	(                           \
 	(n) & (1ULL << 63) ? 63 :	\
 	(n) & (1ULL << 62) ? 62 :	\
 	(n) & (1ULL << 61) ? 61 :	\
@@ -88,10 +90,10 @@
 	)				\
  )
 
-// 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1
+/* 2^31 + 2^29 - 2^25 + 2^22 - 2^19 - 2^16 + 1 */
 #define GOLDEN_RATIO_PRIME_32 0x9e370001UL
 
-//  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1
+/*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
 #define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
 
 #define TWBITS_PER_LONG 32 
@@ -108,7 +110,7 @@
 #error Wordsize not 32 or 64 TWBITS_PER_LONG
 #endif
 
-inline static uint64_t
+static uint64_t
 twhash_64(uint64_t val, unsigned int bits)
 {
 	uint64_t hash = val;
@@ -126,27 +128,27 @@ twhash_64(uint64_t val, unsigned int bits)
 	n <<= 2;
 	hash += n;
 
-	// High bits are more random, so use them.
+	/* High bits are more random, so use them. */
 	return hash >> (64 - bits);
 }
 
-static inline uint32_t
+static uint32_t
 twhash_32(uint32_t val, unsigned int bits)
 {
-	// On some cpus multiply is faster, on others gcc will do shifts
+	/* On some cpus multiply is faster, on others gcc will do shifts */
 	uint32_t hash = val * GOLDEN_RATIO_PRIME_32;
 
-	// High bits are more random, so use them.
+	/* High bits are more random, so use them. */
 	return hash >> (32 - bits);
 }
 
-static inline unsigned long
+static unsigned long
 twhash_ptr(const void *ptr, unsigned int bits)
 {
 	return twhash_long((unsigned long)ptr, bits);
 }
 
-static inline uint32_t
+static uint32_t
 twhash32_ptr(const void *ptr)
 {
 	unsigned long val = (unsigned long) ptr;
@@ -159,9 +161,12 @@ twhash32_ptr(const void *ptr)
 
 #define TWARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-#define TWDEFINE_HASHTABLE(name, bits)				\
+/* not supported by ISO C
+#define TWDEFINE_AND_INIT_HASHTABLE(name, bits)				\
 	struct twhlist_head name[1 << (bits)] =			\
 		{ [0 ... ((1 << (bits)) - 1)] = TWHLIST_HEAD_INIT }
+*/
+#define TWDEFINE_HASHTABLE(name, bits) struct twhlist_head name[1 << (bits)]
 
 #define TWDECLARE_HASHTABLE(name, bits)	\
 	struct twhlist_head name[1 << (bits)]
@@ -169,34 +174,32 @@ twhash32_ptr(const void *ptr)
 #define TWHASH_SIZE(name) (TWARRAY_SIZE(name))
 #define TWHASH_BITS(name) twilog2(TWHASH_SIZE(name))
 
-// Use twhash_32 when possible to allow for fast
-// 32bit hashing in 64bit kernels.
+/* Use twhash_32 when possible to allow for fast
+ * 32bit hashing in 64bit kernels. */
 #define twhash_min(val, bits)							\
 	(sizeof(val) <= 4 ? twhash_32(val, bits) \
 	 	: twhash_long(val, bits))
 
-static inline void
-__twhash_init(struct twhlist_head *ht, unsigned int sz)
-{
-	unsigned int i;
-
+static void
+__twhash_init(struct twhlist_head *ht, size_t sz) {
+	size_t i;
 	for (i = 0; i < sz; i++)
 		TWINIT_HLIST_HEAD(&ht[i]);
 }
 
-/// @brief	Initialize a hashtable.
-/// @details	Calculates the size of the hashtable from the given parameter, otherwise
-///		same as twhash_init_size.
-///		This has to be a macro since HASH_BITS() will not work on pointers since
-///		it calculates the size during preprocessing.
-///		@twhashtable: hashtable to be initialized
+/* @brief	Initialize a hashtable.
+ * @details	Calculates the size of the hashtable from the given parameter, otherwise
+ * same as twhash_init_size.
+ * This has to be a macro since HASH_BITS() will not work on pointers since
+ * it calculates the size during preprocessing.
+ * @twhashtable: hashtable to be initialized */
 #define twhash_init(hashtable) \
 	__twhash_init(hashtable, TWHASH_SIZE(hashtable))
 
-/// @brief	Add an object to a hashtable.
-///		@hashtable: hashtable to add to
-///		@node: the &struct twhlist_node of the object to be added
-///		@key: the key of the object to be added
+/* @brief	Add an object to a hashtable.
+ * @hashtable: hashtable to add to
+ * @node: the &struct twhlist_node of the object to be added
+ * @key: the key of the object to be added */
 #define twhash_add(hashtable, node, key)	\
 	twhlist_add_head(node, \
 		&hashtable[twhash_min(key, TWHASH_BITS(hashtable))])
@@ -205,15 +208,15 @@ __twhash_init(struct twhlist_head *ht, unsigned int sz)
 	twhlist_add_head(node, \
 		&hashtable[twhash_min(key, bits)])
 
-/// @brief	Check whether an object is in any hashtable.
-///		@node: the &struct twhlist_node of the object to be checked
-static inline int
+/* @brief	Check whether an object is in any hashtable.
+ * @node: the &struct twhlist_node of the object to be checked */
+static int
 twhash_hashed(struct twhlist_node *node)
 {
 	return !twhlist_unhashed(node);
 }
 
-static inline int
+static int
 __twhash_empty(struct twhlist_head *ht, unsigned int sz)
 {
 	unsigned int i;
@@ -225,63 +228,59 @@ __twhash_empty(struct twhlist_head *ht, unsigned int sz)
 	return 0;
 }
 
-/// @brief	Check whether a twhashtable is empty.
-/// @details	This has to be a macro since HASH_BITS() will not work on pointers since
-///		it calculates the size during preprocessing.
-///		@hashtable: hashtable to check
+/* @brief	Check whether a twhashtable is empty.
+ * @details	This has to be a macro since HASH_BITS() will not work on pointers since
+ * it calculates the size during preprocessing.
+ * @hashtable: hashtable to check */
 #define twhash_empty(hashtable) \
 	__twhash_empty(hashtable, TWHASH_SIZE(hashtable))
 
-/// @brief	Remove an object from a hashtable.
-///		@node: &struct twhlist_node of the object to remove
-static inline void
+/* @brief	Remove an object from a hashtable.
+ * @node: &struct twhlist_node of the object to remove */
+static void
 twhash_del(struct twhlist_node *node)
 {
 		twhlist_del_init(node);
 }
 
-/// @brief	Iterate over a hashtable.
-///		@name: hashtable to iterate
-///		@bkt: integer to use as bucket loop cursor
-///		@obj: the type * to use as a loop cursor for each entry
-///		@member: the name of the twhlist_node within the struct
+/* @brief	Iterate over a hashtable.
+ * @name: hashtable to iterate
+ * @bkt: integer to use as bucket loop cursor
+ * @obj: the type * to use as a loop cursor for each entry
+ * @member: the name of the twhlist_node within the struct */
 #define twhash_for_each(name, bkt, obj, member)			\
 	for ((bkt) = 0, obj = NULL; \
 		obj == NULL && (bkt) < TWHASH_SIZE(name); (bkt)++) \
 			twhlist_for_each_entry(obj, &name[bkt], member)
 
-/// @brief	Iterate over a hashtable safe against removal of
-///		hash entry.
-///		@name: hashtable to iterate
-///		@bkt: integer to use as bucket loop cursor
-///		@tmp: struct twhlist_node* used for temporary storage
-///		@obj: the type * to use as a loop cursor for each entry
-///		@member: the name of the twhlist_node within the struct
+/* @brief	Iterate over a hashtable safe against removal of hash entry.
+ * @name: hashtable to iterate
+ * @bkt: integer to use as bucket loop cursor
+ * @tmp: struct twhlist_node* used for temporary storage
+ * @obj: the type * to use as a loop cursor for each entry
+ * @member: the name of the twhlist_node within the struct */
 #define twhash_for_each_safe(name, bkt, tmp, obj, member)			\
-	for ((bkt) = 0, obj = NULL; obj == NULL && (bkt) < TWHASH_SIZE(name);\
-							(bkt)++)\
+	for ((bkt) = 0, obj = NULL; obj == NULL && (bkt) < TWHASH_SIZE(name); (bkt)++)\
 		twhlist_for_each_entry_safe(obj, tmp, &name[bkt], member)
 
-/// @brief	Iterate over all possible objects hashing to the
-///		same bucket.
-///		@name: hashtable to iterate
-///		@obj: the type * to use as a loop cursor for each entry
-///		@member: the name of the twhlist_node within the struct
-///		@key: the key of the objects to iterate over
+/* @brief	Iterate over all possible objects hashing to the same bucket.
+ * @name: hashtable to iterate
+ * @obj: the type * to use as a loop cursor for each entry
+ * @member: the name of the twhlist_node within the struct
+ * @key: the key of the objects to iterate over */
 #define twhash_for_each_possible(name, obj, member, key)			\
 	twhlist_for_each_entry(obj, \
 		&name[twhash_min(key, TWHASH_BITS(name))], member)
 
-/// @brief	Iterate over all possible objects hashing to the
-///		same bucket safe against removals.
-///		@name: hashtable to iterate
-///		@obj: the type * to use as a loop cursor for each entry
-///		@tmp: struct twhlist_node* used for temporary storage
-///		@member: the name of the twhlist_node within the struct
-///		@key: the key of the objects to iterate over
+/* @brief	Iterate over all possible objects hashing to the same bucket safe against removals.
+ * @name: hashtable to iterate
+ * @obj: the type * to use as a loop cursor for each entry
+ * @tmp: struct twhlist_node* used for temporary storage
+ * @member: the name of the twhlist_node within the struct
+ * @key: the key of the objects to iterate over */
 #define twhash_for_each_possible_safe(name, obj, tmp, member, key)	\
 	twhlist_for_each_entry_safe(obj, tmp,\
 		&name[twhash_min(key, TWHASH_BITS(name))], member)
 
 
-#endif	// TWHASHTBALE_H
+#endif	/* TWHASHTBALE_H */
