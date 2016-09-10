@@ -111,8 +111,7 @@
 #endif
 
 static uint64_t
-twhash_64(uint64_t val, unsigned int bits)
-{
+twhash_64(uint64_t val, unsigned int bits) {
 	uint64_t hash = val;
 	uint64_t n = hash;
 	n <<= 18;
@@ -133,8 +132,7 @@ twhash_64(uint64_t val, unsigned int bits)
 }
 
 static uint32_t
-twhash_32(uint32_t val, unsigned int bits)
-{
+twhash_32(uint32_t val, unsigned int bits) {
 	/* On some cpus multiply is faster, on others gcc will do shifts */
 	uint32_t hash = val * GOLDEN_RATIO_PRIME_32;
 
@@ -143,14 +141,12 @@ twhash_32(uint32_t val, unsigned int bits)
 }
 
 static unsigned long
-twhash_ptr(const void *ptr, unsigned int bits)
-{
+twhash_ptr(const void *ptr, unsigned int bits) {
 	return twhash_long((unsigned long)ptr, bits);
 }
 
 static uint32_t
-twhash32_ptr(const void *ptr)
-{
+twhash32_ptr(const void *ptr) {
 	unsigned long val = (unsigned long) ptr;
 
 #if TWBITS_PER_LONG == 64
@@ -211,14 +207,12 @@ __twhash_init(struct twhlist_head *ht, size_t sz) {
 /* @brief	Check whether an object is in any hashtable.
  * @node: the &struct twhlist_node of the object to be checked */
 static int
-twhash_hashed(struct twhlist_node *node)
-{
+twhash_hashed(struct twhlist_node *node) {
 	return !twhlist_unhashed(node);
 }
 
 static int
-__twhash_empty(struct twhlist_head *ht, unsigned int sz)
-{
+__twhash_empty(struct twhlist_head *ht, unsigned int sz) {
 	unsigned int i;
 
 	for (i = 0; i < sz; i++)
@@ -238,8 +232,7 @@ __twhash_empty(struct twhlist_head *ht, unsigned int sz)
 /* @brief	Remove an object from a hashtable.
  * @node: &struct twhlist_node of the object to remove */
 static void
-twhash_del(struct twhlist_node *node)
-{
+twhash_del(struct twhlist_node *node) {
 		twhlist_del_init(node);
 }
 
