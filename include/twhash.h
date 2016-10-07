@@ -96,18 +96,21 @@
 /*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
 #define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
 
-#define TWBITS_PER_LONG 32 
-#if ULONG_MAX > UINT_MAX
-#define TWBITS_PER_LONG 64
-#endif
-#if TWBITS_PER_LONG == 32
-#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
-#define twhash_long(val, bits) twhash_32(val, bits)
-#elif TWBITS_PER_LONG == 64
-#define twhash_long(val, bits) twhash_64(val, bits)
-#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
-#else
-#error Wordsize not 32 or 64 TWBITS_PER_LONG
+#ifndef TWBITS_PER_LONG
+	#if ULONG_MAX > UINT_MAX
+		#define TWBITS_PER_LONG 64
+	#else
+		#define TWBITS_PER_LONG 32
+	#endif
+	#if TWBITS_PER_LONG == 32
+		#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
+		#define twhash_long(val, bits) twhash_32(val, bits)
+	#elif TWBITS_PER_LONG == 64
+		#define twhash_long(val, bits) twhash_64(val, bits)
+		#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
+	#else
+		#error Wordsize not 32 or 64 TWBITS_PER_LONG
+	#endif
 #endif
 
 static uint64_t
