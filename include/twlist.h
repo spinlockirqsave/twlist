@@ -15,6 +15,7 @@
 
 
 #include <stdlib.h>
+#include <limits.h>
 
 
 #define tw_container_of(ptr, type, member) __extension__ ({         \
