@@ -97,20 +97,21 @@
 #define GOLDEN_RATIO_PRIME_64 0x9e37fffffffc0001UL
 
 #ifndef TWBITS_PER_LONG
-	#if ULONG_MAX > UINT_MAX
-		#define TWBITS_PER_LONG 64
-	#else
-		#define TWBITS_PER_LONG 32
-	#endif
-	#if TWBITS_PER_LONG == 32
-		#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
-		#define twhash_long(val, bits) twhash_32(val, bits)
-	#elif TWBITS_PER_LONG == 64
-		#define twhash_long(val, bits) twhash_64(val, bits)
-		#define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
-	#else
-		#error Wordsize not 32 or 64 TWBITS_PER_LONG
-	#endif
+    #if ULONG_MAX > UINT_MAX
+        #define TWBITS_PER_LONG 64
+    #else
+        #define TWBITS_PER_LONG 32 
+    #endif
+
+    #if TWBITS_PER_LONG == 32
+        #define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_32
+        #define twhash_long(val, bits) twhash_32(val, bits)
+    #elif TWBITS_PER_LONG == 64
+        #define twhash_long(val, bits) twhash_64(val, bits)
+        #define TWGOLDEN_RATIO_PRIME GOLDEN_RATIO_PRIME_64
+    #else
+        #error Wordsize not 32 or 64 TWBITS_PER_LONG
+    #endif
 #endif
 
 static uint64_t
@@ -226,8 +227,7 @@ __twhash_empty(struct twhlist_head *ht, unsigned int sz) {
 }
 
 /* @brief	Check whether a twhashtable is empty.
- * @details	This has to be a macro since HASH_BITS() will not work on pointers since
- * it calculates the size during preprocessing.
+ * @details	This has to be a macro since HASH_BITS() will not work on pointers since it calculates the size during preprocessing.
  * @hashtable: hashtable to check */
 #define twhash_empty(hashtable) \
 	__twhash_empty(hashtable, TWHASH_SIZE(hashtable))

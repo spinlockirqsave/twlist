@@ -182,7 +182,7 @@ static int
 twlist_is_last(const struct twlist_head *list,
 					const struct twlist_head *head)
 {
-	return list->next == head;
+	return (list->next == head);
 }
 
 /* @brief	Tests whether a twlist is empty.
@@ -190,7 +190,7 @@ twlist_is_last(const struct twlist_head *list,
 static int
 twlist_empty(const struct twlist_head *head)
 {
-	return head->next == head;
+	return (head->next == head);
 }
 
 /* @brief	Tests whether a twlist is empty and not being modified
@@ -206,7 +206,7 @@ static int
 twlist_empty_careful(const struct twlist_head *head)
 {
 		struct twlist_head *next = head->next;
-			return (next == head) && (next == head->prev);
+			return ((next == head) && (next == head->prev));
 }
 
 /* @brief	Rotate the twlist to the left
@@ -227,7 +227,7 @@ twlist_rotate_left(struct twlist_head *head)
 static int
 twlist_is_singular(const struct twlist_head *head)
 {
-	return !twlist_empty(head) && (head->next == head->prev);
+	return (!twlist_empty(head) && (head->next == head->prev));
 }
 
 static void
@@ -532,13 +532,13 @@ TWINIT_HLIST_NODE(struct twhlist_node *h)
 static int
 twhlist_unhashed(const struct twhlist_node *h)
 {
-	return !h->pprev;
+	return (!h->pprev);
 }
 
 static int
 twhlist_empty(const struct twhlist_head *h)
 {
-	return !h->first;
+	return (!h->first);
 }
 
 static void
